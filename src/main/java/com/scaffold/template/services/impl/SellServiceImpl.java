@@ -4,8 +4,10 @@ import com.scaffold.template.config.SaleMapper;
 import com.scaffold.template.dtos.SaleCreateDto;
 import com.scaffold.template.dtos.SaleDetailDto;
 import com.scaffold.template.dtos.SaleResponseDto;
+import com.scaffold.template.dtos.SaleResponseWithNameDto;
 import com.scaffold.template.entities.MovementStockEntity;
 import com.scaffold.template.entities.MovementType;
+import com.scaffold.template.entities.PaymentType;
 import com.scaffold.template.entities.ProductEntity;
 import com.scaffold.template.entities.Reason;
 import com.scaffold.template.entities.SaleDetailEntity;
@@ -17,6 +19,8 @@ import com.scaffold.template.repositories.SaleRepository;
 import com.scaffold.template.repositories.UserRepository;
 import com.scaffold.template.services.SellService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,6 +149,27 @@ public class SellServiceImpl implements SellService {
         movementStockRepository.save(movement);
 
         return subtotal;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SaleResponseWithNameDto> findSalesByFilters(Long userId,
+                                                            String paymentType,
+                                                            String fromDate,
+                                                            String toDate,
+                                                            Double minTotal,
+                                                            Double maxTotal,
+                                                            Pageable pageable) {
+        Page<SaleEntity> salesPage = saleRepository.findSalesByFilters(
+                userId,
+                paymentType != null ? Enum.valueOf(PaymentType.class, paymentType) : null,
+                fromDate != null ? LocalDateTime.parse(fromDate) : null,
+                toDate != null ? LocalDateTime.parse(toDate) : null,
+                minTotal,
+                maxTotal,
+                pageable
+        );
+        return salesPage.map(saleMapper::mapToSaleResponseWithNameDto);
     }
 
 }

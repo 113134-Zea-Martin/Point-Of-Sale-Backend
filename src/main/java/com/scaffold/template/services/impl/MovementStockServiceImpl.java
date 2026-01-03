@@ -2,16 +2,22 @@ package com.scaffold.template.services.impl;
 
 import com.scaffold.template.config.MovementStockMapper;
 import com.scaffold.template.dtos.MovementStockCreateDto;
+import com.scaffold.template.dtos.MovementStockResponseDto;
 import com.scaffold.template.entities.MovementStockEntity;
 import com.scaffold.template.entities.MovementType;
 import com.scaffold.template.entities.ProductEntity;
+import com.scaffold.template.entities.Reason;
 import com.scaffold.template.entities.UserEntity;
 import com.scaffold.template.repositories.MovementStockRepository;
 import com.scaffold.template.repositories.ProductRepository;
 import com.scaffold.template.repositories.UserRepository;
 import com.scaffold.template.services.MovementStockService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -84,4 +90,81 @@ public class MovementStockServiceImpl implements MovementStockService {
         log.info("Movimiento de stock registrado exitosamente: {}", savedMovement);
         return savedMovement;
     }
+
+    @Override
+    public Page<MovementStockResponseDto> findMovementssByFilters(String productName,
+                                                                  String movementType,
+                                                                  String reason,
+                                                                  Long userId,
+                                                                  String fromDate,
+                                                                  String toDate,
+                                                                  Pageable pageable) {
+
+        LocalDateTime fromDateTime = null;
+        LocalDateTime toDateTime = null;
+
+        try {
+            if (fromDate != null && !fromDate.isBlank()) {
+                // intenta parsear como LocalDate (yyyy-MM-dd)
+                try {
+                    fromDateTime = java.time.LocalDate.parse(fromDate).atStartOfDay();
+                } catch (java.time.format.DateTimeParseException ex) {
+                    // si no es solo fecha, intenta LocalDateTime ISO
+                    fromDateTime = java.time.LocalDateTime.parse(fromDate);
+                }
+            }
+
+            if (toDate != null && !toDate.isBlank()) {
+                try {
+                    // convertir toDate (yyyy-MM-dd) al final del día
+                    toDateTime = java.time.LocalDate.parse(toDate)
+                            .plusDays(1)
+                            .atStartOfDay()
+                            .minusNanos(1);
+                } catch (java.time.format.DateTimeParseException ex) {
+                    // si viene con hora, parsear directamente
+                    toDateTime = java.time.LocalDateTime.parse(toDate);
+                }
+            }
+        } catch (java.time.format.DateTimeParseException ex) {
+            throw new IllegalArgumentException("Formato de fecha inválido. Usar 'yyyy-MM-dd' o ISO datetime 'yyyy-MM-ddTHH:mm:ss'", ex);
+        }
+
+        MovementType movementTypeEnum = null;
+        if (movementType != null) {
+            try {
+                movementTypeEnum = MovementType.valueOf(movementType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Tipo de movimiento inválido: " + movementType);
+            }
+        }
+
+        Page<MovementStockEntity> movementStockEntities = movementStockRepository.findByFilters(
+                productName,
+                movementTypeEnum,
+                reason != null ? Enum.valueOf(Reason.class, reason.toUpperCase()) : null,
+                userId,
+                fromDateTime,
+                toDateTime,
+                pageable
+        );
+
+
+        // mapear y calcular stockResultante por movimiento
+        return movementStockEntities.map(entity -> {
+            MovementStockResponseDto dto = movementStockMapper.toMovementStockResponseDto(entity);
+
+            Long productId = entity.getProduct() != null ? entity.getProduct().getId() : null;
+            LocalDateTime date = entity.getDate();
+
+            if (productId != null && date != null) {
+                // Ajustar MovementType.IN / MovementType.OUT según tu enum real
+                Integer stock = movementStockRepository.getStockUntil(productId, date, MovementType.INPUT, MovementType.OUTPUT);
+                dto.setStockResultante(stock == null ? 0 : stock);
+            } else {
+                dto.setStockResultante(0);
+            }
+
+            return dto;
+        });    }
 }

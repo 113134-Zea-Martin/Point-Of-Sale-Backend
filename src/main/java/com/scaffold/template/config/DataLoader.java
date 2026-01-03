@@ -1,6 +1,8 @@
 // java
+// src/main/java/com/scaffold/template/config/DataLoader.java
 package com.scaffold.template.config;
 
+import com.scaffold.template.entities.PaymentType;
 import com.scaffold.template.entities.RoleEntity;
 import com.scaffold.template.entities.UserEntity;
 import com.scaffold.template.repositories.RoleRepository;
@@ -15,6 +17,16 @@ import com.scaffold.template.repositories.BrandRepository;
 import com.scaffold.template.repositories.CategoryRepository;
 import com.scaffold.template.repositories.ProductRepository;
 
+import com.scaffold.template.entities.SaleEntity;
+import com.scaffold.template.entities.SaleDetailEntity;
+import com.scaffold.template.repositories.SaleRepository;
+
+import com.scaffold.template.entities.MovementStockEntity;
+import com.scaffold.template.entities.MovementType;
+import com.scaffold.template.entities.Reason;
+import com.scaffold.template.repositories.MovementStockRepository;
+
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @Component
@@ -25,15 +37,23 @@ public class DataLoader implements CommandLineRunner {
     private final ProductRepository productRepo;
     private final RoleRepository roleRepo;
     private final UserRepository userRepo;
+    private final SaleRepository saleRepo;
+    private final MovementStockRepository movementRepo;
 
     public DataLoader(BrandRepository brandRepo,
                       CategoryRepository categoryRepo,
-                      ProductRepository productRepo, RoleRepository roleRepo, UserRepository userRepo) {
+                      ProductRepository productRepo,
+                      RoleRepository roleRepo,
+                      UserRepository userRepo,
+                      SaleRepository saleRepo,
+                      MovementStockRepository movementRepo) {
         this.brandRepo = brandRepo;
         this.categoryRepo = categoryRepo;
         this.productRepo = productRepo;
         this.roleRepo = roleRepo;
         this.userRepo = userRepo;
+        this.saleRepo = saleRepo;
+        this.movementRepo = movementRepo;
     }
 
     @Override
@@ -119,5 +139,119 @@ public class DataLoader implements CommandLineRunner {
         p5.setActive(Boolean.TRUE);
 
         productRepo.saveAll(Arrays.asList(p1, p2, p3, p4, p5));
+
+        // --- Ventas de ejemplo ---
+        SaleEntity sale1 = new SaleEntity();
+        sale1.setDateTime(LocalDateTime.now().minusDays(2));
+        sale1.setUser(adminUser);
+        sale1.setPaymentType(PaymentType.CASH);
+        // paymentType se deja null para evitar dependencia de enum específico
+        SaleDetailEntity sd1 = new SaleDetailEntity();
+        sd1.setSale(sale1);
+        sd1.setProduct(p1);
+        sd1.setQuantity(2);
+        sd1.setUnitPrice(p1.getSalePrice());
+        sd1.setSubtotal(sd1.getQuantity() * sd1.getUnitPrice());
+
+        SaleDetailEntity sd2 = new SaleDetailEntity();
+        sd2.setSale(sale1);
+        sd2.setProduct(p5);
+        sd2.setQuantity(3);
+        sd2.setUnitPrice(p5.getSalePrice());
+        sd2.setSubtotal(sd2.getQuantity() * sd2.getUnitPrice());
+
+        sale1.setSaleDetails(Arrays.asList(sd1, sd2));
+        sale1.setTotal(sd1.getSubtotal() + sd2.getSubtotal());
+
+        SaleEntity sale2 = new SaleEntity();
+        sale2.setDateTime(LocalDateTime.now().minusDays(1));
+        sale2.setUser(adminUser);
+        sale2.setPaymentType(PaymentType.CREDIT_CARD);
+
+        SaleDetailEntity sd3 = new SaleDetailEntity();
+        sd3.setSale(sale2);
+        sd3.setProduct(p2);
+        sd3.setQuantity(1);
+        sd3.setUnitPrice(p2.getSalePrice());
+        sd3.setSubtotal(sd3.getQuantity() * sd3.getUnitPrice());
+
+        SaleDetailEntity sd4 = new SaleDetailEntity();
+        sd4.setSale(sale2);
+        sd4.setProduct(p3);
+        sd4.setQuantity(2);
+        sd4.setUnitPrice(p3.getSalePrice());
+        sd4.setSubtotal(sd4.getQuantity() * sd4.getUnitPrice());
+
+        sale2.setSaleDetails(Arrays.asList(sd3, sd4));
+        sale2.setTotal(sd3.getSubtotal() + sd4.getSubtotal());
+
+        saleRepo.saveAll(Arrays.asList(sale1, sale2));
+
+        // --- Movimientos de stock de ejemplo (varias fechas y tipos) ---
+        MovementStockEntity m1 = new MovementStockEntity();
+        m1.setProduct(p1);
+        m1.setMovementType(MovementType.INPUT);
+        m1.setReason(Reason.PURCHASE);
+        m1.setQuantity(50);
+        m1.setDate(LocalDateTime.now().minusDays(12));
+        m1.setUser(adminUser);
+
+        MovementStockEntity m2 = new MovementStockEntity();
+        m2.setProduct(p2);
+        m2.setMovementType(MovementType.INPUT);
+        m2.setReason(Reason.PURCHASE);
+        m2.setQuantity(30);
+        m2.setDate(LocalDateTime.now().minusDays(9).minusHours(3));
+        m2.setUser(adminUser);
+
+        MovementStockEntity m3 = new MovementStockEntity();
+        m3.setProduct(p1);
+        m3.setMovementType(MovementType.OUTPUT);
+        m3.setReason(Reason.SALE);
+        m3.setQuantity(2);
+        m3.setDate(LocalDateTime.now().minusDays(2).minusHours(1)); // cerca de sale1
+        m3.setUser(adminUser);
+
+        MovementStockEntity m4 = new MovementStockEntity();
+        m4.setProduct(p5);
+        m4.setMovementType(MovementType.OUTPUT);
+        m4.setReason(Reason.SALE);
+        m4.setQuantity(3);
+        m4.setDate(LocalDateTime.now().minusDays(2).plusHours(2));
+        m4.setUser(adminUser);
+
+        MovementStockEntity m5 = new MovementStockEntity();
+        m5.setProduct(p3);
+        m5.setMovementType(MovementType.INPUT);
+        m5.setReason(Reason.PURCHASE);
+        m5.setQuantity(20);
+        m5.setDate(LocalDateTime.now().minusDays(5).minusHours(6));
+        m5.setUser(adminUser);
+
+        MovementStockEntity m6 = new MovementStockEntity();
+        m6.setProduct(p3);
+        m6.setMovementType(MovementType.OUTPUT);
+        m6.setReason(Reason.SALE);
+        m6.setQuantity(2);
+        m6.setDate(LocalDateTime.now().minusDays(1).minusHours(2)); // cerca de sale2
+        m6.setUser(adminUser);
+
+        MovementStockEntity m7 = new MovementStockEntity();
+        m7.setProduct(p4);
+        m7.setMovementType(MovementType.INPUT);
+        m7.setReason(Reason.ADJUSTMENT);
+        m7.setQuantity(15);
+        m7.setDate(LocalDateTime.now().minusDays(20));
+        m7.setUser(adminUser);
+
+        MovementStockEntity m8 = new MovementStockEntity();
+        m8.setProduct(p2);
+        m8.setMovementType(MovementType.OUTPUT);
+        m8.setReason(Reason.SALE);
+        m8.setQuantity(1);
+        m8.setDate(LocalDateTime.now().minusDays(1).plusHours(1));
+        m8.setUser(adminUser);
+
+        movementRepo.saveAll(Arrays.asList(m1, m2, m3, m4, m5, m6, m7, m8));
     }
 }
