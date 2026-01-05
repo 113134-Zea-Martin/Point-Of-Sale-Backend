@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,4 +31,6 @@ public interface SaleRepository extends JpaRepository<SaleEntity,Long>{
                                         @Param("maxTotal") Double maxTotal,
                                         Pageable pageable
     );
+
+    List<SaleEntity> findByDateTimeBetween(LocalDateTime fromDate, LocalDateTime toDate);
 }

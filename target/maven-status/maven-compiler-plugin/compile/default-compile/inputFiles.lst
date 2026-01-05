@@ -1,5 +1,6 @@
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\Application.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\BrandMapper.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\CashRegisterClosureMapper.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\CategoryMapper.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\CorsConfig.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\DataLoader.java
@@ -10,12 +11,15 @@ D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\tem
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\SaleMapper.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\config\SpringDocConfig.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\BrandController.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\CashRegisterClosureController.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\CategoryController.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\DummyController.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\ProductController.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\SaleController.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\controllers\StockController.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\BrandDto.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\CashRegisterCloseRequestDto.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\CashRegisterClosureResponseDto.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\CategoryDto.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\CreateBrandRequest.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\CreateCategoryRequest.java
@@ -29,8 +33,11 @@ D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\tem
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\ProductUpdateDTO.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\SaleCreateDto.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\SaleDetailDto.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\SaleDetailsNameDto.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\SaleResponseDto.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\dtos\SaleResponseWithNameDto.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\entities\BrandEntity.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\entities\CashRegisterClosureEntity.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\entities\CategoryEntity.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\entities\DummyEntity.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\entities\MovementStockEntity.java
@@ -44,6 +51,7 @@ D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\tem
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\entities\UserEntity.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\models\Dummy.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\BrandRepository.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\CashRegisterClosureRepository.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\CategoryRepository.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\DummyRepository.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\MovementStockRepository.java
@@ -53,9 +61,11 @@ D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\tem
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\SaleRepository.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\repositories\UserRepository.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\BrandService.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\CashRegisterClosureService.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\CategoryService.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\DummyService.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\impl\BrandServiceImpl.java
+D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\impl\CashRegisterClosureServiceImpl.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\impl\CategoryServiceImpl.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\impl\DummyServiceImpl.java
 D:\marti\Gabi - Dev\Initial-Scaffolding-Java-main\src\main\java\com\scaffold\template\services\impl\MovementStockServiceImpl.java

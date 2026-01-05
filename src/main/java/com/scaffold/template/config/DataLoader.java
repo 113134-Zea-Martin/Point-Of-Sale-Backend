@@ -1,10 +1,11 @@
 // java
-// src/main/java/com/scaffold/template/config/DataLoader.java
 package com.scaffold.template.config;
 
+import com.scaffold.template.entities.CashRegisterClosureEntity;
 import com.scaffold.template.entities.PaymentType;
 import com.scaffold.template.entities.RoleEntity;
 import com.scaffold.template.entities.UserEntity;
+import com.scaffold.template.repositories.CashRegisterClosureRepository;
 import com.scaffold.template.repositories.RoleRepository;
 import com.scaffold.template.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -26,8 +27,11 @@ import com.scaffold.template.entities.MovementType;
 import com.scaffold.template.entities.Reason;
 import com.scaffold.template.repositories.MovementStockRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -39,6 +43,7 @@ public class DataLoader implements CommandLineRunner {
     private final UserRepository userRepo;
     private final SaleRepository saleRepo;
     private final MovementStockRepository movementRepo;
+    private final CashRegisterClosureRepository cashRegisterClosureRepo;
 
     public DataLoader(BrandRepository brandRepo,
                       CategoryRepository categoryRepo,
@@ -46,7 +51,8 @@ public class DataLoader implements CommandLineRunner {
                       RoleRepository roleRepo,
                       UserRepository userRepo,
                       SaleRepository saleRepo,
-                      MovementStockRepository movementRepo) {
+                      MovementStockRepository movementRepo,
+                      CashRegisterClosureRepository cashRegisterClosureRepo) {
         this.brandRepo = brandRepo;
         this.categoryRepo = categoryRepo;
         this.productRepo = productRepo;
@@ -54,6 +60,7 @@ public class DataLoader implements CommandLineRunner {
         this.userRepo = userRepo;
         this.saleRepo = saleRepo;
         this.movementRepo = movementRepo;
+        this.cashRegisterClosureRepo = cashRegisterClosureRepo;
     }
 
     @Override
@@ -140,12 +147,11 @@ public class DataLoader implements CommandLineRunner {
 
         productRepo.saveAll(Arrays.asList(p1, p2, p3, p4, p5));
 
-        // --- Ventas de ejemplo ---
+        // --- Ventas de ejemplo existentes ---
         SaleEntity sale1 = new SaleEntity();
         sale1.setDateTime(LocalDateTime.now().minusDays(2));
         sale1.setUser(adminUser);
         sale1.setPaymentType(PaymentType.CASH);
-        // paymentType se deja null para evitar dependencia de enum específico
         SaleDetailEntity sd1 = new SaleDetailEntity();
         sd1.setSale(sale1);
         sd1.setProduct(p1);
@@ -253,5 +259,112 @@ public class DataLoader implements CommandLineRunner {
         m8.setUser(adminUser);
 
         movementRepo.saveAll(Arrays.asList(m1, m2, m3, m4, m5, m6, m7, m8));
+
+        // --- Crear cierres para hoy y los 7 días anteriores, generando ventas por día ---
+        PaymentType[] paymentTypes = new PaymentType[] {
+                PaymentType.CASH, PaymentType.DEBIT_CARD, PaymentType.CREDIT_CARD, PaymentType.MERCADO_PAGO
+        };
+
+        for (int i = 1; i <= 8; i++) {
+            LocalDate date = LocalDate.now().minusDays(i);
+
+            // Generar entre 1 y 3 ventas para la fecha (determinístico)
+            List<SaleEntity> generatedSales = new ArrayList<>();
+            int salesCount = 1 + (i % 3); // 1,2,3 repetitivo
+            for (int j = 0; j < salesCount; j++) {
+                LocalDateTime startOfDay = date.atStartOfDay();
+                LocalDateTime saleTime = startOfDay.plusHours(9 + j * 3 + (i % 4)); // horario dentro del día
+
+                SaleEntity sale = new SaleEntity();
+                sale.setDateTime(saleTime);
+                sale.setUser(adminUser);
+                sale.setPaymentType(paymentTypes[(i + j) % paymentTypes.length]);
+
+                List<SaleDetailEntity> details = new ArrayList<>();
+
+                // primer detalle
+                ProductEntity prod1 = switch (j % 5) {
+                    case 0 -> p1;
+                    case 1 -> p2;
+                    case 2 -> p3;
+                    case 3 -> p4;
+                    default -> p5;
+                };
+                SaleDetailEntity d1 = new SaleDetailEntity();
+                d1.setSale(sale);
+                d1.setProduct(prod1);
+                d1.setQuantity(1 + ((i + j) % 3));
+                d1.setUnitPrice(prod1.getSalePrice());
+                d1.setSubtotal(d1.getQuantity() * d1.getUnitPrice());
+                details.add(d1);
+
+                // opcional segundo detalle para variabilidad
+                if ((i + j) % 2 == 0) {
+                    ProductEntity prod2 = switch ((j + 1) % 5) {
+                        case 0 -> p1;
+                        case 1 -> p2;
+                        case 2 -> p3;
+                        case 3 -> p4;
+                        default -> p5;
+                    };
+                    SaleDetailEntity d2 = new SaleDetailEntity();
+                    d2.setSale(sale);
+                    d2.setProduct(prod2);
+                    d2.setQuantity(1 + ((i + j + 1) % 2));
+                    d2.setUnitPrice(prod2.getSalePrice());
+                    d2.setSubtotal(d2.getQuantity() * d2.getUnitPrice());
+                    details.add(d2);
+                }
+
+                double total = 0;
+                for (SaleDetailEntity sd : details) total += sd.getSubtotal();
+
+                sale.setSaleDetails(details);
+                sale.setTotal(total);
+
+                generatedSales.add(sale);
+            }
+
+            // guardar ventas generadas para el día antes de calcular el cierre
+            if (!generatedSales.isEmpty()) {
+                saleRepo.saveAll(generatedSales);
+            }
+
+            if (cashRegisterClosureRepo.existsByDate(date)) continue;
+
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(23, 59, 59);
+
+            List<SaleEntity> salesOfDay = saleRepo.findByDateTimeBetween(startOfDay, endOfDay);
+
+            double cash = 0;
+            double debit = 0;
+            double credit = 0;
+            double mp = 0;
+
+            for (SaleEntity sale : salesOfDay) {
+                if (sale.getPaymentType() == null) continue;
+                switch (sale.getPaymentType()) {
+                    case CASH -> cash += sale.getTotal();
+                    case DEBIT_CARD -> debit += sale.getTotal();
+                    case CREDIT_CARD -> credit += sale.getTotal();
+                    case MERCADO_PAGO -> mp += sale.getTotal();
+                }
+            }
+
+            CashRegisterClosureEntity closure = new CashRegisterClosureEntity();
+            closure.setDate(date);
+            closure.setCashTotal(cash);
+            closure.setDebitTotal(debit);
+            closure.setCreditTotal(credit);
+            closure.setMercadoPagoTotal(mp);
+            closure.setTotalSales(cash + debit + credit + mp);
+            closure.setTotalOperations(salesOfDay.size());
+            // marcar closedAt cerca del final del día
+            closure.setClosedAt(endOfDay);
+            closure.setClosedBy(adminUser);
+
+            cashRegisterClosureRepo.save(closure);
+        }
     }
 }
