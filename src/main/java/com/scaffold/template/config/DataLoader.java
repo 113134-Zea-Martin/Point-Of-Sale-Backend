@@ -9,6 +9,7 @@ import com.scaffold.template.repositories.CashRegisterClosureRepository;
 import com.scaffold.template.repositories.RoleRepository;
 import com.scaffold.template.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.scaffold.template.entities.BrandEntity;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Component
+@ConditionalOnProperty(prefix = "app.dataloader", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class DataLoader implements CommandLineRunner {
 
     private final BrandRepository brandRepo;
@@ -73,12 +75,12 @@ public class DataLoader implements CommandLineRunner {
 
         UserEntity adminUser = new UserEntity();
         adminUser.setUsername("admin");
-        adminUser.setPassword("adminpass");
+        adminUser.setPassword("admin");
         adminUser.setRole(roleEntity);
         adminUser.setActive(true);
         userRepo.save(adminUser);
 
-        BrandEntity brandA = new BrandEntity();
+       /* BrandEntity brandA = new BrandEntity();
         brandA.setName("Marca A");
         BrandEntity brandB = new BrandEntity();
         brandB.setName("Marca B");
@@ -364,7 +366,7 @@ public class DataLoader implements CommandLineRunner {
             closure.setClosedAt(endOfDay);
             closure.setClosedBy(adminUser);
 
-            cashRegisterClosureRepo.save(closure);
+            cashRegisterClosureRepo.save(closure);*/
         }
     }
-}
+
