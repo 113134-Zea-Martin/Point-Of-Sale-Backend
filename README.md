@@ -202,7 +202,13 @@ Las contribuciones son bienvenidas. Por favor:
 
 ## Licencia
 
-Este proyecto necesita definir su licencia. Considera usar [MIT](https://opensource.org/licenses/MIT) o [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Este proyecto está licenciado bajo la Licencia MIT.
+
+Copyright (c) 2026 113134-Zea-Martin
+
+---
 
 ## Contacto
 
